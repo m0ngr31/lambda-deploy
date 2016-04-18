@@ -81,7 +81,12 @@ class LambdaDeploy(object):
     def package(self, name):
         """Packages lambda data for deployment into a zip"""
         logger.info('Packaging lambda {}'.format(name))
-        src_dir = os.path.join(self.lambda_dir, name)
+
+        if name == os.path.split(self.lambda_dir)[1]:
+            src_dir = self.lambda_dir
+        else:
+            src_dir = os.path.join(self.lambda_dir, name)
+
         zfh = io.BytesIO()
 
         with zipfile.ZipFile(zfh, 'w') as zf:
@@ -149,6 +154,10 @@ class LambdaDeploy(object):
             ),
             os.listdir(self.lambda_dir)
         )
+        
+        if not lambda_dirs and not lambdas:
+            current_dir = os.path.split(os.getcwd())[1]
+            lambda_dirs.append(current_dir)
 
         for missing in [m for m in lambdas if m not in lambda_dirs]:
             logger.warn('Lambda {} not found, skipping.'.format(missing))
